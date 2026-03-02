@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bello-Feed • Minion Social Lab</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Nunito:wght@300;400;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="page">
+      <header class="top-bar">
+        <div class="brand">
+          <div class="brand-logo">B</div>
+          <div class="brand-text">
+            <h1>Bello-Feed</h1>
+            <p class="brand-tagline">Private network for underground Minions</p>
+          </div>
+        </div>
+        <div class="lab-status">
+          <span class="lab-dot"></span>
+          <span class="lab-text">Underground Lab • Online</span>
+        </div>
+      </header>
+
+      <main class="layout">
+        <!-- LEFT: Persona selector -->
+        <section class="panel persona-panel">
+          <h2>1. Choose your Minion persona</h2>
+          <p class="panel-caption">
+            Pick who you are today in the lab. Each Minion has a tiny bio and preferred banana style.
+          </p>
+
+          <div class="persona-grid" id="personaGrid">
+            <!-- Persona cards injected by JS as well, but we add basic fallback -->
+            <button class="persona-card" data-persona-id="kevin">
+              <div class="avatar avatar--tall">
+                <span class="avatar-goggles avatar-goggles--double"></span>
+              </div>
+              <div class="persona-main">
+                <div class="persona-name-row">
+                  <span class="persona-name">Kevin</span>
+                  <span class="persona-role">Lab Supervisor</span>
+                </div>
+                <p class="persona-bio">Keeps chaos barely under control. Pretends not to like bananas.</p>
+                <p class="persona-meta">Prefers: grilled banana panini</p>
+              </div>
+            </button>
+
+            <button class="persona-card" data-persona-id="stuart">
+              <div class="avatar avatar--medium">
+                <span class="avatar-goggles avatar-goggles--single"></span>
+              </div>
+              <div class="persona-main">
+                <div class="persona-name-row">
+                  <span class="persona-name">Stuart</span>
+                  <span class="persona-role">Guitar Specialist</span>
+                </div>
+                <p class="persona-bio">Jams during fire drills. Posts cryptic song lyrics to the feed.</p>
+                <p class="persona-meta">Prefers: banana smoothie with extra chaos</p>
+              </div>
+            </button>
+
+            <button class="persona-card" data-persona-id="bob">
+              <div class="avatar avatar--short">
+                <span class="avatar-goggles avatar-goggles--double"></span>
+              </div>
+              <div class="persona-main">
+                <div class="persona-name-row">
+                  <span class="persona-name">Bob</span>
+                  <span class="persona-role">Intern • Explosives</span>
+                </div>
+                <p class="persona-bio">Accidentally blows up coffee machines. Means well.</p>
+                <p class="persona-meta">Prefers: literally any banana, now</p>
+              </div>
+            </button>
+
+            <button class="persona-card" data-persona-id="scarlet">
+              <div class="avatar avatar--tall avatar--evil">
+                <span class="avatar-goggles avatar-goggles--single"></span>
+              </div>
+              <div class="persona-main">
+                <div class="persona-name-row">
+                  <span class="persona-name">Scarlet</span>
+                  <span class="persona-role">Evil Architect</span>
+                </div>
+                <p class="persona-bio">Designs overcomplicated traps, complains about OSHA.</p>
+                <p class="persona-meta">Prefers: banana crème brûlée (with lasers)</p>
+              </div>
+            </button>
+          </div>
+        </section>
+
+        <!-- CENTER: Composer + feed -->
+        <section class="panel feed-panel">
+          <header class="panel-header">
+            <h2>2. Bello status update</h2>
+            <p class="panel-caption">
+              Write what your Minion is thinking. Work rants, banana cravings, or experiment updates.
+            </p>
+          </header>
+
+          <div class="composer" id="composer">
+            <div class="composer-header">
+              <div class="composer-avatar-placeholder" id="composerAvatar"></div>
+              <div class="composer-info">
+                <span class="composer-name" id="composerName">No persona selected</span>
+                <span class="composer-role" id="composerRole">Choose a Minion on the left to start posting.</span>
+              </div>
+            </div>
+
+            <textarea
+              id="statusInput"
+              class="composer-input"
+              rows="3"
+              maxlength="220"
+              placeholder="Bello! Today in the lab I'm... (max 220 characters)"
+            ></textarea>
+            <div class="composer-footer">
+              <div class="composer-meta">
+                <span class="char-count" id="charCount">0 / 220</span>
+                <label class="toggle">
+                  <input type="checkbox" id="bananaModeToggle" />
+                  <span class="toggle-slider"></span>
+                  <span class="toggle-label">Banana mode</span>
+                </label>
+              </div>
+              <button class="btn btn-primary" id="postButton">
+                Post to Bello-Feed
+              </button>
+            </div>
+          </div>
+
+          <div class="feed-toolbar">
+            <div class="filter-group">
+              <button class="chip chip--active" data-filter="all" id="filterAll">All Minions</button>
+              <button class="chip" data-filter="me" id="filterMe">My posts</button>
+              <button class="chip" data-filter="bananas" id="filterBananas">Bananas only</button>
+            </div>
+            <div class="feed-hint">
+              Auto-generated lab chatter will appear here too. Scroll to eavesdrop.
+            </div>
+          </div>
+
+          <ul class="feed" id="feedList">
+            <!-- Feed items will be rendered here -->
+          </ul>
+        </section>
+
+        <!-- RIGHT: Lab metrics + system log -->
+        <aside class="panel side-panel">
+          <h2>3. Lab mood & stats</h2>
+          <p class="panel-caption">Real-time* insights into underground productivity. (*Totally fabricated.)</p>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-label">Banana Stock</span>
+              <span class="stat-pill stat-pill--banana" id="bananaStock">83%</span>
+            </div>
+            <div class="stat-bar">
+              <div class="stat-bar-fill stat-bar-fill--banana" id="bananaStockBar"></div>
+            </div>
+            <p class="stat-caption">If this hits 0%, expect a tiny yellow riot.</p>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-label">Experiment Stability</span>
+              <span class="stat-pill stat-pill--danger" id="stabilityLabel">Unstable</span>
+            </div>
+            <div class="stability-dots" id="stabilityDots">
+              <span class="dot dot--active"></span>
+              <span class="dot dot--active"></span>
+              <span class="dot"></span>
+            </div>
+            <p class="stat-caption">
+              More Minion posts with "boom" or "kaboom" lower stability.
+            </p>
+          </div>
+
+          <div class="log">
+            <div class="log-header">
+              <span>System Log</span>
+              <span class="log-badge">LAB-42</span>
+            </div>
+            <ul class="log-list" id="systemLog">
+              <li>Boot sequence complete. All Minions authenticated via banana-scent scan.</li>
+              <li>Reminder: Complaining about supervisors aloud is discouraged. Complaining here is encouraged.</li>
+              <li>New feature: Banana mode auto-injects nonsense Minion words.</li>
+            </ul>
+          </div>
+        </aside>
+      </main>
+
+      <footer class="footer">
+        <span>Made with bananas, chaos, and CSS • Bello-Feed v1.0</span>
+      </footer>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
+

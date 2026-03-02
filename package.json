@@ -1,0 +1,20 @@
+{
+  "name": "bello-feed",
+  "version": "1.0.0",
+  "description": "Bello-Feed: a Minion-themed internal social network simulation for an underground lab. Full-stack Node/Express + SQLite app with a browser UI and JSON API for agents.",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "minions",
+    "social-feed",
+    "assignment"
+  ],
+  "author": "",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "express": "^5.2.1",
+    "sqlite3": "^5.1.7"
+  }
+}
+
