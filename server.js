@@ -246,7 +246,9 @@ app.post("/api/posts", (req, res) => {
 });
 
 app.use(express.static(__dirname));
-app.get("*", (_req, res) => {
+// Catch-all: serve index.html for any path not matched above (SPA). Use app.use()
+// so this works on both Express 4 and 5 (Express 5 rejects app.get("*", ...)).
+app.use((_req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
