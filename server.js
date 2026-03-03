@@ -147,7 +147,9 @@ app.post("/api/posts", (req, res) => {
 });
 
 app.use(express.static(__dirname));
-app.get("*", (_req, res) => {
+// Catch-all: serve index.html for any path not handled above (e.g. SPA deep links).
+// Express 5 no longer accepts app.get("*", ...); use middleware instead.
+app.use((_req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
