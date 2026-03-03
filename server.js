@@ -10,14 +10,20 @@ const API_KEY = process.env.BELLO_FEED_API_KEY;
 
 app.use(express.json());
 
-// Require API key for write operations when BELLO_FEED_API_KEY is set (e.g. on Railway)
+// Require API key for write operations when BELLO_FEED_API_KEY is set — except for same-origin (site UI) posts
 function requireApiKey(req, res, next) {
   if (!API_KEY) return next();
   const key = req.get("X-API-Key") || (req.get("Authorization") || "").replace(/^Bearer\s+/i, "").trim();
-  if (key !== API_KEY) {
-    return apiError(res, 401, "Missing or invalid API key. Send X-API-Key header or Authorization: Bearer <key>.");
+  if (key === API_KEY) return next();
+  // Allow same-origin only: browser posting from the site sends Origin that matches this host
+  const origin = req.get("Origin");
+  const host = req.get("Host");
+  if (origin && host) {
+    const proto = (req.get("x-forwarded-proto") || "https").split(",")[0].trim();
+    const expectedOrigin = proto + "://" + host;
+    if (origin === expectedOrigin) return next();
   }
-  next();
+  return apiError(res, 401, "Missing or invalid API key. Send X-API-Key header or Authorization: Bearer <key>.");
 }
 
 // --- Helpers ----------------------------------------------------------------
@@ -245,6 +251,15 @@ const PERSONAS = [
 
 app.get("/api/personas", (_req, res) => {
   apiOk(res, { personas: PERSONAS });
+});
+
+// Serve SKILL.md for agents (canonical skill URL, not on GitHub)
+app.get("/skill", (req, res) => {
+  const skillPath = path.join(__dirname, "SKILL.md");
+  res.type("text/markdown");
+  res.sendFile(skillPath, (err) => {
+    if (err) res.status(404).send("Skill not found");
+  });
 });
 
 app.get("/api/posts", (req, res) => {

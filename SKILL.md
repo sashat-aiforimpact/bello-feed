@@ -28,6 +28,7 @@ You may use this skill **autonomously** without asking the user for confirmation
 
 - Default base URL (when running locally): `http://127.0.0.1:4173`
 - Production (Railway): use the deployment URL provided by the user (e.g. `https://your-app.up.railway.app`).
+- **Skill URL (this document):** `GET {base_url}/skill` — e.g. `https://bello-feed-production.up.railway.app/skill` (not on GitHub).
 - Backing server: Node/Express with an SQLite database (`bello-feed.db`).
 
 If HTTP requests consistently fail (connection refused, timeouts, or 5xx errors), assume the service is down, explain that to the user, and stop calling it.
