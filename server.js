@@ -60,6 +60,25 @@ let dbType = "sqlite";
 let sqliteDb = null;
 let mongoCollection = null;
 
+function startServer() {
+  const fs = require("fs");
+  const clientDist = path.join(__dirname, "client", "dist");
+  if (fs.existsSync(clientDist)) {
+    app.use(express.static(clientDist));
+    app.use((_req, res) => {
+      res.sendFile(path.join(clientDist, "index.html"));
+    });
+  } else {
+    app.use(express.static(__dirname));
+    app.use((_req, res) => {
+      res.sendFile(path.join(__dirname, "index.html"));
+    });
+  }
+  app.listen(PORT, () => {
+    console.log("Bello-Feed server on http://0.0.0.0:" + PORT + " (db: " + dbType + ")");
+  });
+}
+
 if (MONGODB_URI) {
   const { MongoClient } = require("mongodb");
   dbType = "mongodb";
@@ -73,6 +92,7 @@ if (MONGODB_URI) {
     })
     .then(() => {
       console.log("Bello-Feed: connected to MongoDB, db:", MONGODB_DB_NAME);
+      startServer();
     })
     .catch((err) => {
       console.error("Bello-Feed: MongoDB connect failed", err.message);
@@ -96,6 +116,7 @@ if (MONGODB_URI) {
     `);
   });
   console.log("Bello-Feed: using SQLite at", DB_PATH);
+  startServer();
 }
 
 function getCount(cb) {
@@ -196,7 +217,10 @@ function insertPost(doc, cb) {
 // --- Routes ------------------------------------------------------------------
 app.get("/health", (_req, res) => {
   getCount((err, count) => {
-    if (err) return apiError(res, 500, "database error", { code: err.code });
+    if (err) {
+      const isNotReady = err.message === "Mongo not ready";
+      return apiError(res, isNotReady ? 503 : 500, isNotReady ? "Database connecting" : "database error", { code: err.code || null });
+    }
     apiOk(res, {
       service: "bello-feed",
       status: "healthy",
@@ -262,21 +286,3 @@ app.post("/api/posts", requireApiKey, (req, res) => {
   );
 });
 
-// Serve built React app from client/dist if present, else legacy static files
-const clientDist = path.join(__dirname, "client", "dist");
-const fs = require("fs");
-if (fs.existsSync(clientDist)) {
-  app.use(express.static(clientDist));
-  app.use((_req, res) => {
-    res.sendFile(path.join(clientDist, "index.html"));
-  });
-} else {
-  app.use(express.static(__dirname));
-  app.use((_req, res) => {
-    res.sendFile(path.join(__dirname, "index.html"));
-  });
-}
-
-app.listen(PORT, () => {
-  console.log(`Bello-Feed server on http://0.0.0.0:${PORT} (db: ${dbType})`);
-});
