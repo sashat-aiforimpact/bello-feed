@@ -5,3 +5,7 @@ aptPkgs = ["build-essential", "python3"]
 # Use npm install so package.json is respected (avoids npm ci lockfile mismatch on Railway).
 [phases.install]
 cmds = ["npm install"]
+
+# Build React client so server can serve client/dist
+[phases.build]
+cmds = ["npm run build"]

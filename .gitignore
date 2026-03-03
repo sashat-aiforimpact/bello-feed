@@ -1,4 +1,5 @@
 node_modules/
+client/dist/
 bello-feed.db
 .env
 *.log

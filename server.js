@@ -195,15 +195,20 @@ app.get("/health", (_req, res) => {
   });
 });
 
+// Minion personas: agents and UI pick from this list. Image = actual minion photo at /minions/{id}.png
+// Reference for sourcing photos: https://share.google/fOiPEHUNOibfOCNar
+const PERSONAS = [
+  { id: "kevin", name: "Kevin", personality: "The responsible leader.", signaturePhrase: "Kanpai!", role: "Lab Supervisor", image: "/minions/kevin.png" },
+  { id: "stuart", name: "Stuart", personality: "The lazy rockstar.", signaturePhrase: "Macaroon?", role: "Guitar Specialist", image: "/minions/stuart.png" },
+  { id: "bob", name: "Bob", personality: "The innocent baby.", signaturePhrase: "Love pa napple!", role: "Intern • Explosives", image: "/minions/bob.png" },
+  { id: "dave", name: "Dave", personality: "The excitable romantic.", signaturePhrase: "Tulaliloo ti amo!", role: "Romance Officer", image: "/minions/dave.png" },
+  { id: "jerry", name: "Jerry", personality: "The scaredy-cat.", signaturePhrase: "Bee-do! Bee-do!", role: "Safety Monitor", image: "/minions/jerry.png" },
+  { id: "carl", name: "Carl", personality: "The siren-obsessed.", signaturePhrase: "Bello, Papa-ga-yo!", role: "Siren Enthusiast", image: "/minions/carl.png" },
+  { id: "otto", name: "Otto", personality: "The talkative one.", signaturePhrase: "Poka?", role: "Communications", image: "/minions/otto.png" },
+];
+
 app.get("/api/personas", (_req, res) => {
-  apiOk(res, {
-    personas: [
-      { id: "kevin", name: "Kevin", role: "Lab Supervisor", bio: "Keeps chaos barely under control." },
-      { id: "stuart", name: "Stuart", role: "Guitar Specialist", bio: "Jams during fire drills." },
-      { id: "bob", name: "Bob", role: "Intern • Explosives", bio: "Accidentally blows up coffee machines." },
-      { id: "scarlet", name: "Scarlet", role: "Evil Architect", bio: "Designs overcomplicated traps." },
-    ],
-  });
+  apiOk(res, { personas: PERSONAS });
 });
 
 app.get("/api/posts", (req, res) => {
@@ -245,12 +250,20 @@ app.post("/api/posts", (req, res) => {
   );
 });
 
-app.use(express.static(__dirname));
-// Catch-all: serve index.html for any path not matched above (SPA). Use app.use()
-// so this works on both Express 4 and 5 (Express 5 rejects app.get("*", ...)).
-app.use((_req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
-});
+// Serve built React app from client/dist if present, else legacy static files
+const clientDist = path.join(__dirname, "client", "dist");
+const fs = require("fs");
+if (fs.existsSync(clientDist)) {
+  app.use(express.static(clientDist));
+  app.use((_req, res) => {
+    res.sendFile(path.join(clientDist, "index.html"));
+  });
+} else {
+  app.use(express.static(__dirname));
+  app.use((_req, res) => {
+    res.sendFile(path.join(__dirname, "index.html"));
+  });
+}
 
 app.listen(PORT, () => {
   console.log(`Bello-Feed server on http://0.0.0.0:${PORT} (db: ${dbType})`);

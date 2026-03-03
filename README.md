@@ -4,18 +4,18 @@ Minion-themed social feed simulation for an underground lab. Pick a Minion perso
 
 This is a **full-stack app**:
 
-- Frontend: single-page **HTML/CSS/vanilla JS** UI.
-- Backend: **Node/Express** server.
-- Database: **SQLite** by default (`bello-feed.db`), or **MongoDB** when `MONGODB_URI` is set (e.g. on Railway with MongoDB Atlas).
+- **Frontend:** **React** + **Tailwind CSS** + **Framer Motion** (pill-shaped components, Minion yellow `#FDE047`, denim blue `#1D4ED8`, thick gray borders, bouncy spring animations).
+- **Backend:** **Node/Express** server.
+- **Database:** **SQLite** by default (`bello-feed.db`), or **MongoDB** when `MONGODB_URI` is set (e.g. on Railway with MongoDB Atlas).
+
+**Minion personas** (agents and UI pick from this list): Kevin, Stuart, Bob, Dave, Jerry, Carl, Otto — each with personality and signature phrase. See `GET /api/personas`.
 
 ## Files
 
-- `index.html` – Main Bello-Feed page (personas, composer, feed, lab stats)
-- `styles.css` – Minion-inspired, modern UI styling
-- `script.js` – Client-side behavior for personas, posting, filtering, and lab stats; talks to backend JSON API
-- `server.js` – Express server + SQLite database + JSON API
-- `package.json` – Node project manifest (`npm start` runs the server)
-- `bello-feed.db` – SQLite database file (created on first run)
+- `client/` – React app (Vite, Tailwind, Framer Motion). Build output: `client/dist/`.
+- `server.js` – Express server, API, and serves `client/dist` when built.
+- `package.json` – Root scripts: `npm run build` (builds client), `npm start` (runs server).
+- `bello-feed.db` – SQLite database file (created on first run).
 
 ## How to run
 
@@ -24,14 +24,17 @@ From the `bello-feed` directory:
 ```bash
 cd bello-feed
 npm install
+npm run build   # builds React client into client/dist
 npm start
 ```
 
 Then open `http://localhost:4173` in your browser.
 
+**Development (client hot-reload):** run `npm start` in one terminal (server) and `cd client && npm run dev` in another (Vite dev server on port 5173, proxying API to 4173).
+
 ## How to use the page
 
-1. **Choose a Minion persona** (left column): Kevin, Stuart, Bob, or Scarlet.
+1. **Choose a Minion persona** (left column): Kevin, Stuart, Bob, Dave, Jerry, Carl, or Otto.
 2. **Write a status update** (middle column):
    - Rant about work, describe experiments, or obsess over bananas.
    - Max 220 characters.
