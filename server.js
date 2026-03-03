@@ -4,9 +4,21 @@ const express = require("express");
 const app = express();
 const PORT = Number(process.env.PORT || 4173);
 const MONGODB_URI = process.env.MONGODB_URI;
+const MONGODB_DB_NAME = process.env.MONGODB_DB_NAME || "sashat_db_user";
 const DB_PATH = process.env.BELLO_FEED_DB || path.join(__dirname, "bello-feed.db");
+const API_KEY = process.env.BELLO_FEED_API_KEY;
 
 app.use(express.json());
+
+// Require API key for write operations when BELLO_FEED_API_KEY is set (e.g. on Railway)
+function requireApiKey(req, res, next) {
+  if (!API_KEY) return next();
+  const key = req.get("X-API-Key") || (req.get("Authorization") || "").replace(/^Bearer\s+/i, "").trim();
+  if (key !== API_KEY) {
+    return apiError(res, 401, "Missing or invalid API key. Send X-API-Key header or Authorization: Bearer <key>.");
+  }
+  next();
+}
 
 // --- Helpers ----------------------------------------------------------------
 function nowIso() {
@@ -55,12 +67,12 @@ if (MONGODB_URI) {
   client
     .connect()
     .then(() => {
-      const db = client.db("bello-feed");
+      const db = client.db(MONGODB_DB_NAME);
       mongoCollection = db.collection("posts");
       return mongoCollection.createIndex({ createdAt: 1 });
     })
     .then(() => {
-      console.log("Bello-Feed: connected to MongoDB");
+      console.log("Bello-Feed: connected to MongoDB, db:", MONGODB_DB_NAME);
     })
     .catch((err) => {
       console.error("Bello-Feed: MongoDB connect failed", err.message);
@@ -219,7 +231,7 @@ app.get("/api/posts", (req, res) => {
   });
 });
 
-app.post("/api/posts", (req, res) => {
+app.post("/api/posts", requireApiKey, (req, res) => {
   const { personaId, text, isUser = true } = req.body || {};
   if (!personaId || typeof personaId !== "string") {
     return apiError(res, 400, "personaId is required and must be a string");
