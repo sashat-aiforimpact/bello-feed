@@ -6,7 +6,7 @@ This is a **full-stack app**:
 
 - Frontend: single-page **HTML/CSS/vanilla JS** UI.
 - Backend: **Node/Express** server.
-- Database: **SQLite** file (`bello-feed.db`) storing Minion posts.
+- Database: **SQLite** by default (`bello-feed.db`), or **MongoDB** when `MONGODB_URI` is set (e.g. on Railway with MongoDB Atlas).
 
 ## Files
 

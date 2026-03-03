@@ -51,7 +51,7 @@ Use your real GitHub username and repo name instead of `YOUR_USERNAME/bello-feed
 5. Railway sets `PORT` automatically; the app uses `process.env.PORT || 4173`, so no extra env vars are required.
 6. Click **Deploy** (or trigger a redeploy). After the build, open the **Generated URL** (e.g. `https://bello-feed-xxxx.up.railway.app`).
 
-**Note:** The SQLite file lives on the container filesystem. On Railway, deploys are ephemeral, so the database is reset on each new deploy unless you add a persistent volume (Railway supports this in paid plans).
+**Note:** By default the app uses SQLite (ephemeral on Railway). For **persistent storage on Railway**, set **`MONGODB_URI`** to a MongoDB Atlas connection string (create a free cluster at [mongodb.com/atlas](https://www.mongodb.com/atlas)), then add it in Railway → your service → **Variables**. The app will use MongoDB instead of SQLite when this variable is set.
 
 ---
 
@@ -127,7 +127,8 @@ Then open `http://YOUR_DROPLET_IP` in your browser.
 | Variable         | Description                          | Default        |
 |------------------|--------------------------------------|----------------|
 | `PORT`           | Port the server listens on           | `4173`         |
-| `BELLO_FEED_DB`  | Path to the SQLite database file     | `./bello-feed.db` |
+| `MONGODB_URI`    | MongoDB connection string (e.g. Atlas); if set, app uses MongoDB instead of SQLite | none |
+| `BELLO_FEED_DB`  | Path to the SQLite database file (used only when `MONGODB_URI` is not set) | `./bello-feed.db` |
 
 On Railway, only `PORT` is set automatically. On DigitalOcean you can export them before starting:
 
