@@ -1,0 +1,7 @@
+# Native deps (e.g. sqlite3) need build tools for node-gyp.
+[phases.setup]
+aptPkgs = ["build-essential", "python3"]
+
+# Use npm install so package.json is respected (avoids npm ci lockfile mismatch on Railway).
+[phases.install]
+cmds = ["npm install"]
