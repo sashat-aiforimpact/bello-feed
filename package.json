@@ -15,6 +15,9 @@
   "engines": {
     "node": ">=18"
   },
+  "overrides": {
+    "express": "4.21.2"
+  },
   "dependencies": {
     "express": "4.21.2",
     "mongodb": "^6.10.0",
