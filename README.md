@@ -87,3 +87,7 @@ Base URL when running locally: `http://127.0.0.1:4173`
 
 All responses follow the shape `{ "ok": true, "data": { ... } }` on success or `{ "ok": false, "error": { "message": "...", "details": { ... } } }` on errors.
 
+## Deployment
+
+See **[DEPLOY.md](./DEPLOY.md)** for step-by-step instructions to deploy to **Railway** and to a **DigitalOcean** VM (SSH).
+

@@ -8,13 +8,10 @@ const DB_PATH = process.env.BELLO_FEED_DB || path.join(__dirname, "bello-feed.db
 
 app.use(express.json());
 
-// --- Database setup ---------------------------------------------------------
-
 const db = new sqlite3.Database(DB_PATH);
 
 db.serialize(() => {
-  db.run(
-    `
+  db.run(`
     CREATE TABLE IF NOT EXISTS posts (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       persona_id TEXT NOT NULL,
@@ -25,8 +22,7 @@ db.serialize(() => {
       is_user INTEGER NOT NULL DEFAULT 1,
       created_at TEXT NOT NULL
     )
-  `,
-  );
+  `);
 });
 
 function nowIso() {
@@ -34,40 +30,25 @@ function nowIso() {
 }
 
 function hasBananaContent(text) {
-  return /banana|bananas|bananas?!!|🍌/i.test(text);
+  return /banana|bananas|🍌/i.test(text);
 }
-
 function hasComplaint(text) {
   return /(ugh|complain|tired|boring|why|again|late shift|overworked)/i.test(text);
 }
-
 function hasExperiment(text) {
   return /(experiment|lab|test|prototype|laser|boom|kaboom|explosive)/i.test(text);
 }
 
-// --- API helpers ------------------------------------------------------------
-
 function apiOk(res, data, status = 200) {
   res.status(status).json({ ok: true, data });
 }
-
 function apiError(res, status, message, details) {
-  res.status(status).json({
-    ok: false,
-    error: {
-      message,
-      details: details || null,
-    },
-  });
+  res.status(status).json({ ok: false, error: { message, details: details || null } });
 }
-
-// --- Health -----------------------------------------------------------------
 
 app.get("/health", (_req, res) => {
   db.get("SELECT COUNT(*) AS count FROM posts", (err, row) => {
-    if (err) {
-      return apiError(res, 500, "database error", { code: err.code });
-    }
+    if (err) return apiError(res, 500, "database error", { code: err.code });
     apiOk(res, {
       service: "bello-feed",
       status: "healthy",
@@ -77,71 +58,35 @@ app.get("/health", (_req, res) => {
   });
 });
 
-// --- Personas ---------------------------------------------------------------
-
 app.get("/api/personas", (_req, res) => {
   apiOk(res, {
     personas: [
-      {
-        id: "kevin",
-        name: "Kevin",
-        role: "Lab Supervisor",
-        bio: "Keeps chaos barely under control. Pretends not to like bananas.",
-      },
-      {
-        id: "stuart",
-        name: "Stuart",
-        role: "Guitar Specialist",
-        bio: "Jams during fire drills. Posts cryptic song lyrics to the feed.",
-      },
-      {
-        id: "bob",
-        name: "Bob",
-        role: "Intern \u2022 Explosives",
-        bio: "Accidentally blows up coffee machines. Means well.",
-      },
-      {
-        id: "scarlet",
-        name: "Scarlet",
-        role: "Evil Architect",
-        bio: "Designs overcomplicated traps, complains about OSHA.",
-      },
+      { id: "kevin", name: "Kevin", role: "Lab Supervisor", bio: "Keeps chaos barely under control." },
+      { id: "stuart", name: "Stuart", role: "Guitar Specialist", bio: "Jams during fire drills." },
+      { id: "bob", name: "Bob", role: "Intern • Explosives", bio: "Accidentally blows up coffee machines." },
+      { id: "scarlet", name: "Scarlet", role: "Evil Architect", bio: "Designs overcomplicated traps." },
     ],
   });
 });
 
-// --- Posts ------------------------------------------------------------------
-
 app.get("/api/posts", (req, res) => {
   const { personaId, bananaOnly } = req.query;
-
   const clauses = [];
   const params = [];
-
   if (personaId) {
     clauses.push("persona_id = ?");
     params.push(String(personaId));
   }
-  if (bananaOnly === "true") {
-    clauses.push("banana_tags > 0");
-  }
-
+  if (bananaOnly === "true") clauses.push("banana_tags > 0");
   const where = clauses.length ? `WHERE ${clauses.join(" AND ")}` : "";
 
   db.all(
-    `
-    SELECT id, persona_id, text, banana_tags, complain_tags, experiment_tags, is_user, created_at
-    FROM posts
-    ${where}
-    ORDER BY datetime(created_at) ASC
-  `,
+    `SELECT id, persona_id, text, banana_tags, complain_tags, experiment_tags, is_user, created_at
+     FROM posts ${where} ORDER BY datetime(created_at) ASC`,
     params,
     (err, rows) => {
-      if (err) {
-        return apiError(res, 500, "database error", { code: err.code });
-      }
-
-      const posts = rows.map((row) => ({
+      if (err) return apiError(res, 500, "database error", { code: err.code });
+      const posts = (rows || []).map((row) => ({
         id: row.id,
         personaId: row.persona_id,
         text: row.text,
@@ -153,48 +98,31 @@ app.get("/api/posts", (req, res) => {
           ...(row.experiment_tags ? ["experiment"] : []),
         ],
       }));
-
       apiOk(res, { posts });
-    },
+    }
   );
 });
 
 app.post("/api/posts", (req, res) => {
   const { personaId, text, isUser = true } = req.body || {};
-
   if (!personaId || typeof personaId !== "string") {
     return apiError(res, 400, "personaId is required and must be a string");
   }
   if (!text || typeof text !== "string" || !text.trim()) {
     return apiError(res, 400, "text is required and must be a non-empty string");
   }
-
   const trimmedText = text.trim();
   const createdAt = nowIso();
-
   const bananaTags = hasBananaContent(trimmedText) ? 1 : 0;
   const complainTags = hasComplaint(trimmedText) ? 1 : 0;
   const experimentTags = hasExperiment(trimmedText) ? 1 : 0;
 
   db.run(
-    `
-    INSERT INTO posts (persona_id, text, banana_tags, complain_tags, experiment_tags, is_user, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `,
-    [
-      personaId,
-      trimmedText,
-      bananaTags,
-      complainTags,
-      experimentTags,
-      isUser ? 1 : 0,
-      createdAt,
-    ],
+    `INSERT INTO posts (persona_id, text, banana_tags, complain_tags, experiment_tags, is_user, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [personaId, trimmedText, bananaTags, complainTags, experimentTags, isUser ? 1 : 0, createdAt],
     function onInsert(err) {
-      if (err) {
-        return apiError(res, 500, "database error", { code: err.code });
-      }
-
+      if (err) return apiError(res, 500, "database error", { code: err.code });
       const id = this.lastID;
       apiOk(
         res,
@@ -212,26 +140,18 @@ app.post("/api/posts", (req, res) => {
             ],
           },
         },
-        201,
+        201
       );
-    },
+    }
   );
 });
 
-// --- Static frontend --------------------------------------------------------
-
-const publicDir = __dirname;
-app.use(express.static(publicDir));
-
+app.use(express.static(__dirname));
 app.get("*", (_req, res) => {
-  res.sendFile(path.join(publicDir, "index.html"));
+  res.sendFile(path.join(__dirname, "index.html"));
 });
-
-// --- Start server -----------------------------------------------------------
 
 app.listen(PORT, () => {
-  // eslint-disable-next-line no-console
-  console.log(`Bello-Feed server listening on http://127.0.0.1:${PORT}`);
-  console.log(`Database file: ${DB_PATH}`);
+  console.log(`Bello-Feed server on http://0.0.0.0:${PORT}`);
+  console.log(`Database: ${DB_PATH}`);
 });
-
